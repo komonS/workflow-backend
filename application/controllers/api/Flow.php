@@ -1,7 +1,9 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: *");
+header("Access-Control-Allow-Credentials: true");
+header('Access-Control-Allow-Headers: origin, content-type, accept');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
 require(APPPATH . 'libraries/RestController.php');
 require(APPPATH . 'libraries/Format.php');
 
@@ -92,6 +94,25 @@ class Flow extends RestController
 
 
 
+		$this->response($result, 200);
+	}
+
+
+	public function flow_get()
+	{
+		$status = $this->get("status");
+		$workflowID = $this->get("workflowID");
+
+		if ($status == 1) {
+			$where = "(flowStatusID = 1 OR flowStatusID = 4) AND workflowID = $workflowID";
+			$result = $this->flowmodel->selectData($where);
+		} else if ($status == 2) {
+			$where = "(flowStatusID = 2 OR flowStatusID = 3) AND workflowID = $workflowID";
+			$result = $this->flowmodel->selectData($where);
+		} else {
+			$where = "workflowID = $workflowID";
+			$result = $this->flowmodel->selectData($where);
+		}
 		$this->response($result, 200);
 	}
 

@@ -1,7 +1,10 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: *");
+header("Access-Control-Allow-Credentials: true"); 
+header('Access-Control-Allow-Headers: origin, content-type, accept');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+
 require(APPPATH . 'libraries/RestController.php');
 require(APPPATH . 'libraries/Format.php');
 
@@ -20,10 +23,12 @@ class WorkFlow extends RestController
     {
         $name = $this->post('name');
         $status = $this->post('status');
+        $owner = $this->post('owner');
 
         $arr = array(
             'workflowName' => $name,
-            "workflowStatusID" => $status
+            "workflowStatusID" => $status,
+            "owner" => $owner
         );
         $id = $this->workflowmodel->create($arr);
 

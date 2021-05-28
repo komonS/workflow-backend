@@ -41,4 +41,23 @@ class FlowModel extends CI_model
 
         return $result;
     }
+
+
+    public function countFlow($where = "")
+    {
+        if ($where != "") {
+            $query = $this->db->select('COUNT(*) AS count')
+                ->from('Flow')
+                ->where($where)
+                ->get();
+            $result = $query->result();
+            return $result;
+        } else {
+            $query = $this->db->select('COUNT(*) AS count')
+                ->from('Flow')
+                ->get();
+            $result = $query->result();
+            return $result;
+        }
+    }
 }

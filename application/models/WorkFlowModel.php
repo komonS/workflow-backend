@@ -30,16 +30,36 @@ class WorkFlowModel extends CI_model
         if ($where != "") {
             $query = $this->db->select('*')
                 ->from('WorkFlows')
+                ->join("WorkflowStatus", "WorkflowStatus.workflowStatusID = WorkFlows.workflowStatusID", "inner")
                 ->where($where)
                 ->get();
             $result = $query->result();
         } else {
             $query = $this->db->select('*')
                 ->from('WorkFlows')
+                ->join("WorkflowStatus", "WorkflowStatus.workflowStatusID = WorkFlows.workflowStatusID", "inner")
                 ->get();
             $result = $query->result();
         }
 
         return $result;
+    }
+
+    public function countWorkflow($where = "")
+    {
+        if ($where != "") {
+            $query = $this->db->select('COUNT(*) AS count')
+                ->from('WorkFlows')
+                ->where($where)
+                ->get();
+            $result = $query->result();
+            return $result;
+        } else {
+            $query = $this->db->select('COUNT(*) AS count')
+                ->from('WorkFlows')
+                ->get();
+            $result = $query->result();
+            return $result;
+        }
     }
 }
