@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+date_default_timezone_set("Asia/Bangkok");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Credentials: true");
 header('Access-Control-Allow-Headers: origin, content-type, accept');
@@ -71,9 +72,12 @@ class Step extends RestController
     {
         $workflowID = $this->get("workflowID");
         $workflowStepID = $this->get("workflowStepID");
+        $stepNumber = $this->get('stepNumber');
 
         if ($workflowStepID != "") {
             $where = "workflowStepID = '$workflowStepID'";
+        } else if ($stepNumber != "") {
+            $where = "workflowID = '$workflowID' AND stepNumber = '$stepNumber'";
         } else {
             $where = "workflowID = '$workflowID'";
         }
@@ -89,13 +93,15 @@ class Step extends RestController
     {
         $workflowStepID = $this->put("workflowStepID");
         $workflowStepName = $this->put("name");
+        $address = $this->put("address");
 
         $arr = array(
-            "workflowStepName"  => $workflowStepName
+            "workflowStepName"  => $workflowStepName,
+            "formAddress"       => $address
         );
         $where = "workflowStepID = '$workflowStepID'";
 
-        $this->stepmodel->updateStep($arr,$where);
+        $this->stepmodel->updateStep($arr, $where);
 
         $result = array(
             "status"    => "success",

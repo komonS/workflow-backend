@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+date_default_timezone_set("Asia/Bangkok");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Credentials: true"); 
 header('Access-Control-Allow-Headers: origin, content-type, accept');

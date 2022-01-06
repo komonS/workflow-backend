@@ -1,5 +1,6 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+date_default_timezone_set("Asia/Bangkok");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Credentials: true");
 header('Access-Control-Allow-Headers: origin, content-type, accept');
@@ -17,6 +18,7 @@ class Flow extends RestController
 		$this->load->model('flowmodel');
 		$this->load->model('workflowmodel');
 		$this->load->model('approvalmodel');
+		$this->load->model('flowlogmodel');
 	}
 
 	public function create_post()
@@ -25,6 +27,7 @@ class Flow extends RestController
 		$start = $this->post('start');
 		$end = $this->post('end');
 		$requester = $this->post('requester');
+		$flowName = $this->post('flowName');
 
 		/// check workflow data
 		$where = "workflowID = " . $workflowID;
@@ -39,11 +42,22 @@ class Flow extends RestController
 				'startFlow'		=> $start,
 				'endFlow'		=> $end,
 				'requester'		=> $requester,
-				'flowStatusID'	=> 1
+				'flowStatusID'	=> 1,
+				'flowName'		=> $flowName
 			);
 
 			$flowID = $this->flowmodel->create($arr);
+			
 			if ($flowID != "") {
+				$log = array(
+					"flowID"    => $flowID,
+					"approval"  => $requester,
+					"action"    => "create",
+					"actionDate"    => date("Y-m-d H:i:s"),
+					"comment"   => ""
+				);
+				$this->flowlogmodel->create($log);
+
 				$result = array(
 					"status" 		=> "success",
 					"detail"		=> "create flow success",
@@ -71,8 +85,18 @@ class Flow extends RestController
 	public function startflow_post()
 	{
 		$flowID = $this->post('flowID');
+		$userID = $this->post('userID');
 
 		$approval = $this->approvalmodel->checkApprove($flowID);
+
+		$log = array(
+			"flowID"    => $flowID,
+			"approval"  => $userID,
+			"action"    => "start",
+			"actionDate"    => date("Y-m-d H:i:s"),
+			"comment"   => ""
+		);
+		$this->flowlogmodel->create($log);
 
 		if (count($approval) > 0) {
 			$arr = array(
@@ -80,6 +104,13 @@ class Flow extends RestController
 			);
 			$where = "flowApprovalID = '" . $approval[0]->flowApprovalID . "'";
 			$this->approvalmodel->update($arr, $where);
+
+			$data = array(
+				"flowStatusID"	=> 1
+			);
+			$where = "flowID = '$flowID'";
+
+			$this->flowmodel->update($data, $where);
 
 			$result = array(
 				"status"	=> "success",
@@ -102,12 +133,24 @@ class Flow extends RestController
 	{
 		$status = $this->get("status");
 		$workflowID = $this->get("workflowID");
-
+		$flowID = $this->get('flowID');
+		/*  
+			status 1 is flow active
+			status 2 is flow success
+			status 3 is flow one
+			stauts other is all flow
+		*/
 		if ($status == 1) {
-			$where = "(flowStatusID = 1 OR flowStatusID = 4) AND workflowID = $workflowID";
+			$where = "(Flow.flowStatusID = 1 OR Flow.flowStatusID = 4) AND Flow.workflowID = $workflowID";
 			$result = $this->flowmodel->selectData($where);
 		} else if ($status == 2) {
-			$where = "(flowStatusID = 2 OR flowStatusID = 3) AND workflowID = $workflowID";
+			$where = "(Flow.flowStatusID = 2 OR Flow.flowStatusID = 3) AND Flow.workflowID = $workflowID";
+			$result = $this->flowmodel->selectData($where);
+		} else if ($status == 3) {
+			$where = "Flow.flowID = '$flowID'";
+			$result = $this->flowmodel->selectData($where);
+		} else if ($status == "one") {
+			$where = "Flow.flowID = '$flowID'";
 			$result = $this->flowmodel->selectData($where);
 		} else {
 			$where = "workflowID = $workflowID";
@@ -115,6 +158,26 @@ class Flow extends RestController
 		}
 		$this->response($result, 200);
 	}
+
+	public function flowuser_get()
+	{
+		$workflowID = $this->get("workflowID");
+		$userID = $this->get("userID");
+
+		$where = "workflowID = $workflowID" . " AND requester = '$userID'";
+		$result = $this->flowmodel->selectData($where);
+
+		$this->response($result, 200);
+	}
+
+	public function detail_get()
+	{
+		$flowID = $this->get('flowID');
+		$where = "Flow.flowID = '$flowID'";
+		$result = $this->flowmodel->getDetail($where);
+		$this->response($result, 200);
+	}
+
 
 
 	///ยังไม่ได้ใช้งานฟังก์ชั่นนี้

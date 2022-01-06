@@ -29,12 +29,14 @@ class FlowModel extends CI_model
         if ($where != "") {
             $query = $this->db->select('*')
                 ->from('Flow')
+                ->join("FlowStatus", "FlowStatus.flowStatusID = Flow.flowStatusID", "inner")
                 ->where($where)
                 ->get();
             $result = $query->result();
         } else {
             $query = $this->db->select('*')
                 ->from('Flow')
+                ->join("FlowStatus", "FlowStatus.flowStatusID = Flow.flowStatusID", "inner")
                 ->get();
             $result = $query->result();
         }
@@ -59,5 +61,17 @@ class FlowModel extends CI_model
             $result = $query->result();
             return $result;
         }
+    }
+
+    public function getDetail($where)
+    {
+        $query = $this->db->select('*')
+            ->from('Flow')
+            ->join("FlowStatus", "FlowStatus.flowStatusID = Flow.flowStatusID", "inner")
+            ->join("WorkFlows", "Flow.workflowID = WorkFlows.workflowID", "inner")
+            ->where($where)
+            ->get();
+        $result = $query->result();
+        return $result;
     }
 }
